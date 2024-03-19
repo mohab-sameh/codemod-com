@@ -1,0 +1,7 @@
+const result = computeValue(a, b);
+const cb = () => { /* ... */ };
+const customContextValue = use(CustomContext);
+<CustomContext value={customContextValue}></CustomContext>
+function Component({ref, ...props}) {
+// ...
+}

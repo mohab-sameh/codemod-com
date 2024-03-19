@@ -1,0 +1,6 @@
+import { useSearchParams } from 'next/navigation';
+
+export async function Component() {
+	const params = useSearchParams();
+	return <div>My Component</div>;
+}

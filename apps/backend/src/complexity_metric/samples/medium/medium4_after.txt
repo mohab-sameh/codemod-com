@@ -1,0 +1,7 @@
+import { useCompatSearchParams } from 'hooks/utils';
+
+export async function Component() {
+	const params = useCompatSearchParams();
+
+	return <div>My Component</div>;
+}

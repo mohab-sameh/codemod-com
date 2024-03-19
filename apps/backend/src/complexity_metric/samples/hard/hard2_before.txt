@@ -1,0 +1,6 @@
+import { useRouter } from 'next/router';
+
+function Component() {
+	const { query } = useRouter();
+	const { a, b, c } = query;
+}

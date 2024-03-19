@@ -1,0 +1,7 @@
+const result = useMemo(() =>  computeValue(a, b), [a, b]);
+const cb = useCallback(() => { /* ... */ }, [a, b]);
+const customContextValue = useContext(CustomContext);
+<CustomContext.Provider value={customContextValue}></CustomContext.Provider>
+const Component = React.forwardRef((props, ref) => {
+// ...
+});

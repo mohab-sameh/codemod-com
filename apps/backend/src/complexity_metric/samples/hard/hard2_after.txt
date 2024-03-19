@@ -1,0 +1,15 @@
+import { useParams, useSearchParams } from 'next/navigation';
+import { useCallback } from 'react';
+
+function Component() {
+	const params = useParams();
+	const searchParams = useSearchParams();
+	const getParam = useCallback(
+		(p: string) => params?.[p] ?? searchParams?.get(p),
+		[params, searchParams],
+	);
+
+	const a = getParam('a');
+	const b = getParam('b');
+	const c = getParam('c');
+}
