@@ -210,6 +210,7 @@ export const executeMainThread = async () => {
           handleLearnCliCommand({
             printer,
             target: args.target ?? null,
+            source: args.source ?? null,
           }),
         );
       },

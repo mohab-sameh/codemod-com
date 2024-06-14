@@ -103,6 +103,7 @@ const createCodemodStudioURL = ({
 export const handleLearnCliCommand = async (options: {
   printer: PrinterBlueprint;
   target: string | null;
+  source: string | null;
 }) => {
   const { printer, target } = options;
 
@@ -156,6 +157,18 @@ export const handleLearnCliCommand = async (options: {
     paths = userSelectedPaths;
   }
 
+  const changedFiles: string[] = [];
+
+  printer.printConsoleMessage(
+    "info",
+    chalk.cyan(
+      "Learning",
+      chalk.bold(doubleQuotify("git diff")),
+      "has begun...",
+      "\n",
+    ),
+  );
+
   for (const path of paths) {
     const latestCommitHash = getLatestCommitHash(dirname(path));
     if (latestCommitHash === null) {
@@ -164,24 +177,13 @@ export const handleLearnCliCommand = async (options: {
         message:
           "Unexpected error occurred while getting the latest commit hash.",
       });
-      return;
+
+      continue;
     }
 
     // const path = dirtyPath.replace(/\$/g, "\\$").replace(/\^/g, "\\^");
 
     // const fileExtension = getFileExtension(path);
-
-    // printer.printConsoleMessage(
-    //   "info",
-    //   chalk.cyan(
-    //     "Learning",
-    //     chalk.bold(doubleQuotify("git diff")),
-    //     "at",
-    //     chalk.bold(path),
-    //     "has begun...",
-    //     "\n",
-    //   ),
-    // );
 
     const gitDiff = getGitDiffForFile(latestCommitHash, path);
     if (gitDiff === null) {
@@ -198,7 +200,8 @@ export const handleLearnCliCommand = async (options: {
         message:
           "There is no difference between the status of the file and that at the previous commit.",
       });
-      return;
+
+      continue;
     }
 
     const oldSourceFile = getOldSourceFile(
