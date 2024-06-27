@@ -2,10 +2,10 @@ import { useAuth } from "@/app/auth/useAuth";
 import { codemodAiWsServer, shouldUseCodemodAi } from "@chatbot/config";
 import type { LLMMessage, MessageFromWs, MessageToWs } from "@chatbot/types";
 import type { LLMEngine } from "@shared/consts";
-import { toast } from "@studio/components/ui/use-toast";
 import { useSnippetStore } from "@studio/store/zustand/snippets";
 import type { ToVoid } from "@studio/types/transformations";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { type Socket, io } from "socket.io-client";
 
 type MessageToSend = {

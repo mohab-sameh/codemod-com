@@ -2,9 +2,10 @@ import {
   autoGenerateCodemodPrompt,
   fixCodemodBlockNoDebugInfoPrompt,
 } from "@chatbot/prompts";
-import { toast } from "@studio/components/ui/use-toast";
 import type { Aliases } from "@studio/store/zustand/CFS/alias";
 import { useCodemodExecutionError } from "@studio/store/zustand/log";
+import toast from "react-hot-toast";
+import { shouldUseCodemodAi } from "./config";
 
 const errorResponses = {
   400: "The request you made could not be completed.",
@@ -19,7 +20,7 @@ type ErrorCodes = keyof typeof errorResponses;
 export function onResponse(response: Response) {
   const errorMessage = errorResponses[response.status as ErrorCodes];
   if (errorMessage) {
-    toast({ variant: "destructive", title: errorMessage });
+    toast.error(errorMessage);
   }
 }
 
