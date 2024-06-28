@@ -147,3 +147,17 @@ export const removeNamedImport = (
       path.value.specifiers = usedSpecifiers;
     });
 };
+
+export const getFirstIndexAfterImports = (
+  j: JSCodeshift,
+  file: Collection<File>,
+) => {
+  const programBody = file.find(j.Program).paths()[0]?.value.body ?? [];
+
+  // @ts-expect-error findLastIndex
+  const lastImportDeclarationIndex = findLastIndex(programBody, (node) =>
+    j.ImportDeclaration.check(node),
+  );
+
+  return lastImportDeclarationIndex + 1;
+};
