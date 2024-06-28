@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import jscodeshift, { type FileInfo, type API } from "jscodeshift";
+
 import { describe, it } from "vitest";
-import { addNamedImport } from "../src/index.js";
+import { addNamedImport, isFunctionDefaultExport } from "../src/index.js";
 
 const buildApi = (parser: string | undefined): API => ({
   j: parser ? jscodeshift.withParser(parser) : jscodeshift,
@@ -56,5 +57,44 @@ describe("import utils", async () => {
       actualOutput?.replace(/\W/gm, ""),
       OUTPUT.replace(/\W/gm, ""),
     );
+  });
+
+  it("default export", async () => {
+    const INPUT = `
+    export default function A() {}
+    export function B() {}
+    `;
+
+    const fileInfo: FileInfo = {
+      path: "index.js",
+      source: INPUT,
+    };
+
+    const { j, root } = buildRootCollection(fileInfo, buildApi("tsx"));
+
+    const [fn1, fn2] = root.find(j.FunctionDeclaration).paths() ?? [];
+
+    assert.ok(isFunctionDefaultExport(j, root, fn1));
+    assert.ok(!isFunctionDefaultExport(j, root, fn2));
+  });
+
+  it("default export 2", async () => {
+    const INPUT = `
+    const A = () => {}
+    const B = () => {}
+    export default A;
+    `;
+
+    const fileInfo: FileInfo = {
+      path: "index.js",
+      source: INPUT,
+    };
+
+    const { j, root } = buildRootCollection(fileInfo, buildApi("tsx"));
+
+    const [fn1, fn2] = root.find(j.ArrowFunctionExpression).paths() ?? [];
+
+    assert.ok(isFunctionDefaultExport(j, root, fn1));
+    assert.ok(!isFunctionDefaultExport(j, root, fn2));
   });
 });

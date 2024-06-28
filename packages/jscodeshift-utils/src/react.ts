@@ -100,16 +100,25 @@ export const getDefaultExport = (
 ): ASTPath<unknown> | null =>
   root.find(j.ExportDefaultDeclaration).paths()?.at(0) ?? null;
 
-// export const isFunctionDefaultExport = (
-//   j: JSCodeshift,
-//   root: Collection<any>,
-//   path: ASTPath<FunctionLike>,
-// ) => {
-//   const defaultExport = getDefaultExport(j, root);
+/**
+ * checks if the given function is the part of default export
+ */
+export const isFunctionDefaultExport = (
+  j: JSCodeshift,
+  root: Collection<any>,
+  path: ASTPath<FunctionLike>,
+) => {
+  const defaultExport = getDefaultExport(j, root);
 
-//   const defaultExportDeclaration = defaultExport?.value.declaration;
+  const defaultExportDeclaration = defaultExport?.value.declaration;
 
-//   if (j.FunctionDeclaration.check(defaultExportDeclaration)) {
-//     return path.value === defaultExportDeclaration
-//   }
-// };
+  if (j.FunctionDeclaration.check(defaultExportDeclaration)) {
+    return path.value === defaultExportDeclaration;
+  }
+
+  if (j.Identifier.check(defaultExportDeclaration)) {
+    return getFunctionComponentName(j, path) === defaultExportDeclaration.name;
+  }
+
+  return false;
+};
