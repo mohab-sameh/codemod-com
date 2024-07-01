@@ -4684,6 +4684,9 @@ importers:
 
   packages/codemods/react/19/replace-default-props:
     devDependencies:
+      '@codemod-com/jscodeshift-utils':
+        specifier: workspace:*
+        version: link:../../../../jscodeshift-utils
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.11
@@ -4720,6 +4723,9 @@ importers:
 
   packages/codemods/react/19/replace-reactdom-render:
     devDependencies:
+      '@codemod-com/jscodeshift-utils':
+        specifier: workspace:*
+        version: link:../../../../jscodeshift-utils
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.11
@@ -4738,6 +4744,9 @@ importers:
 
   packages/codemods/react/19/replace-string-ref:
     devDependencies:
+      '@codemod-com/jscodeshift-utils':
+        specifier: workspace:*
+        version: link:../../../../jscodeshift-utils
       '@codemod-com/utilities':
         specifier: workspace:*
         version: link:../../../../utilities
