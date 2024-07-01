@@ -6,9 +6,17 @@ import type {
   FunctionDeclaration,
   FunctionExpression,
   JSCodeshift,
-  ReturnStatement,
 } from "jscodeshift";
 import { analyzeImport } from "./import.js";
+
+const isCapitalized = (str: string): boolean => {
+  if (str.length === 0) {
+    return false;
+  }
+
+  const firstChar = str.charAt(0);
+  return firstChar === firstChar.toUpperCase();
+};
 
 export const getClassComponents = (
   j: JSCodeshift,
@@ -66,11 +74,7 @@ export const getFunctionComponents = (j: JSCodeshift, root: Collection) => {
     ...root.find(j.ArrowFunctionExpression).paths(),
   ];
 
-  return functionLikePaths.filter((path) =>
-    j(path)
-      .find(j.ReturnStatement)
-      .every((path) => isReactElement(j, path.value.argument)),
-  );
+  return functionLikePaths.filter((path) => isReactFunctionComponent(j, path));
 };
 
 export const getFunctionComponentName = (
@@ -83,16 +87,14 @@ export const getFunctionComponentName = (
     ? path.parent.value.id.name
     : path.value.id?.name ?? null;
 
-export const isReactElement = (
+export const isReactFunctionComponent = (
   j: JSCodeshift,
-  maybeJsx: ReturnStatement["argument"],
-) =>
-  j.BooleanLiteral.check(maybeJsx) ||
-  j.StringLiteral.check(maybeJsx) ||
-  j.NullLiteral.check(maybeJsx) ||
-  j.NumericLiteral.check(maybeJsx) ||
-  j.JSXElement.check(maybeJsx) ||
-  j.JSXFragment.check(maybeJsx);
+  maybeComponent: ASTPath<FunctionLike>,
+) => {
+  const name = getFunctionComponentName(j, maybeComponent);
+
+  return name && isCapitalized(name);
+};
 
 export const getDefaultExport = (
   j: JSCodeshift,
@@ -100,14 +102,19 @@ export const getDefaultExport = (
 ): ASTPath<unknown> | null =>
   root.find(j.ExportDefaultDeclaration).paths()?.at(0) ?? null;
 
-/**
- * checks if the given function is the part of default export
- */
-export const isFunctionDefaultExport = (
+const isTopLevel = (j: JSCodeshift, path: ASTPath<FunctionLike>) => {
+  return j(path).closest(j.BlockStatement).paths().length === 0;
+};
+
+export const isFunctionComponentExportedByDefault = (
   j: JSCodeshift,
   root: Collection<any>,
   path: ASTPath<FunctionLike>,
 ) => {
+  if (!isTopLevel(j, path)) {
+    return false;
+  }
+
   const defaultExport = getDefaultExport(j, root);
 
   const defaultExportDeclaration = defaultExport?.value.declaration;

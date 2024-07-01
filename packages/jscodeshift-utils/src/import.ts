@@ -2,6 +2,7 @@ import type {
   ASTPath,
   Collection,
   ImportDeclaration,
+  ImportSpecifier,
   JSCodeshift,
 } from "jscodeshift";
 
@@ -94,6 +95,60 @@ export const getImportByName = (
     .paths()
     .at(0) ?? null;
 
+export const getNamedImport = (
+  j: JSCodeshift,
+  root: Collection<any>,
+  name: string,
+  sourceName: string,
+): ImportSpecifier | null => {
+  const existingImportDeclaration = getImportByName(j, root, sourceName)?.value;
+
+  if (
+    !existingImportDeclaration ||
+    existingImportDeclaration.specifiers?.length === 0
+  ) {
+    return null;
+  }
+
+  return (
+    existingImportDeclaration.specifiers?.find(
+      (s): s is ImportSpecifier =>
+        j.ImportSpecifier.check(s) && s.imported.name === name,
+    ) ?? null
+  );
+};
+
+/**
+ * Renames named import in specific ImportDeclaration
+ */
+export const renameNamedImport = (
+  j: JSCodeshift,
+  root: Collection<any>,
+  importName: string,
+  newName: string,
+  sourceName: string,
+) => {
+  const existingImportDeclaration = getImportByName(j, root, sourceName)?.value;
+
+  if (
+    !existingImportDeclaration ||
+    existingImportDeclaration.specifiers?.length === 0
+  ) {
+    return;
+  }
+
+  existingImportDeclaration.specifiers =
+    existingImportDeclaration.specifiers?.map((s) =>
+      j.ImportSpecifier.check(s) && s.imported?.name === importName
+        ? j.importSpecifier(j.identifier(newName))
+        : s,
+    );
+};
+
+/**
+ * Adds named import to the ImportDeclaration.
+ * Creates new ImportDeclaration if needed.
+ */
 export const addNamedImport = (
   j: JSCodeshift,
   root: Collection<any>,
@@ -123,6 +178,10 @@ export const addNamedImport = (
   }
 };
 
+/**
+ * Removes named import from the ImportDeclaration.
+ * Removes ImportDeclaration if needed.
+ */
 export const removeNamedImport = (
   j: JSCodeshift,
   root: Collection<any>,
