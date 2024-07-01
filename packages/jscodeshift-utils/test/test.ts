@@ -77,6 +77,9 @@ describe("import utils", async () => {
 
     const [fn1, fn2] = root.find(j.FunctionDeclaration).paths() ?? [];
 
+    assert.ok(fn1 !== undefined);
+    assert.ok(fn2 !== undefined);
+
     assert.ok(isFunctionComponentExportedByDefault(j, root, fn1));
     assert.ok(!isFunctionComponentExportedByDefault(j, root, fn2));
   });
@@ -96,6 +99,9 @@ describe("import utils", async () => {
     const { j, root } = buildRootCollection(fileInfo, buildApi("tsx"));
 
     const [fn1, fn2] = root.find(j.ArrowFunctionExpression).paths() ?? [];
+
+    assert.ok(fn1 !== undefined);
+    assert.ok(fn2 !== undefined);
 
     assert.ok(isFunctionComponentExportedByDefault(j, root, fn1));
     assert.ok(!isFunctionComponentExportedByDefault(j, root, fn2));
