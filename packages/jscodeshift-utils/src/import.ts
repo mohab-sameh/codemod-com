@@ -194,8 +194,10 @@ export const removeNamedImport = (
     })
     .forEach((path) => {
       const usedSpecifiers =
-        path.value.specifiers?.filter(
-          (specifier) => specifier.local?.name !== importName,
+        path.value.specifiers?.filter((specifier) =>
+          j.ImportSpecifier.check(specifier)
+            ? specifier.imported?.name !== importName
+            : specifier,
         ) ?? [];
 
       if (usedSpecifiers.length === 0) {

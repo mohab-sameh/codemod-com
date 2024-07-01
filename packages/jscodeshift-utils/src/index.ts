@@ -16,4 +16,6 @@ export {
   getFunctionComponents,
 } from "./react.js";
 
+export { getClassMethod, getClassProperty } from "./class.js";
+
 export { getCallExpressionsByImport } from "./callExpression.js";

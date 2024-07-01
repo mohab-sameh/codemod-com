@@ -6,7 +6,6 @@ import type {
   ExportDefaultDeclaration,
   FunctionDeclaration,
   FunctionExpression,
-  Identifier,
   JSCodeshift,
 } from "jscodeshift";
 import { analyzeImport } from "./import.js";
