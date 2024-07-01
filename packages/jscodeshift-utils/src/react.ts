@@ -3,8 +3,10 @@ import type {
   ArrowFunctionExpression,
   ClassDeclaration,
   Collection,
+  ExportDefaultDeclaration,
   FunctionDeclaration,
   FunctionExpression,
+  Identifier,
   JSCodeshift,
 } from "jscodeshift";
 import { analyzeImport } from "./import.js";
@@ -99,7 +101,7 @@ export const isReactFunctionComponent = (
 export const getDefaultExport = (
   j: JSCodeshift,
   root: Collection<any>,
-): ASTPath<unknown> | null =>
+): ASTPath<ExportDefaultDeclaration> | null =>
   root.find(j.ExportDefaultDeclaration).paths()?.at(0) ?? null;
 
 const isTopLevel = (j: JSCodeshift, path: ASTPath<FunctionLike>) => {
