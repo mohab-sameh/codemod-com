@@ -4,7 +4,10 @@ import { join } from "node:path";
 import jscodeshift, { type FileInfo, type API } from "jscodeshift";
 
 import { describe, it } from "vitest";
-import { addNamedImport, isFunctionDefaultExport } from "../src/index.js";
+import {
+  addNamedImport,
+  isFunctionComponentExportedByDefault,
+} from "../src/index.js";
 
 const buildApi = (parser: string | undefined): API => ({
   j: parser ? jscodeshift.withParser(parser) : jscodeshift,
@@ -74,8 +77,8 @@ describe("import utils", async () => {
 
     const [fn1, fn2] = root.find(j.FunctionDeclaration).paths() ?? [];
 
-    assert.ok(isFunctionDefaultExport(j, root, fn1));
-    assert.ok(!isFunctionDefaultExport(j, root, fn2));
+    assert.ok(isFunctionComponentExportedByDefault(j, root, fn1));
+    assert.ok(!isFunctionComponentExportedByDefault(j, root, fn2));
   });
 
   it("default export 2", async () => {
@@ -94,7 +97,7 @@ describe("import utils", async () => {
 
     const [fn1, fn2] = root.find(j.ArrowFunctionExpression).paths() ?? [];
 
-    assert.ok(isFunctionDefaultExport(j, root, fn1));
-    assert.ok(!isFunctionDefaultExport(j, root, fn2));
+    assert.ok(isFunctionComponentExportedByDefault(j, root, fn1));
+    assert.ok(!isFunctionComponentExportedByDefault(j, root, fn2));
   });
 });
