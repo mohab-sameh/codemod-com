@@ -1,4 +1,4 @@
-import { type Api, api } from "@codemod.com/workflow";
+import type { Api } from "@codemod.com/workflow";
 import fetch from "npm-registry-fetch";
 import semver from "semver";
 
@@ -31,6 +31,8 @@ const getPackageVersions = async (packageName: string) => {
 const packageVersionsCache = new Map();
 
 const getPackageData = async (packageKey: string) => {
+  console.info(`Getting ${packageKey} data...`);
+
   const { version, name } = parsePackageKey(packageKey);
 
   let packageVersions = packageVersionsCache.get(packageKey);
@@ -194,9 +196,10 @@ const getDependencyTree = async (
   return nodes;
 };
 
-const getDependentPackages = async (packageName: string, packageJSON: any) => {
-  const dependencyTree = await getDependencyTree(packageJSON);
-
+const getDependentPackages = async (
+  dependencyTree: Map<any, any>,
+  packageName: string,
+) => {
   const dependents = new Set<Node>();
 
   function traverse(node: Node) {
@@ -219,7 +222,7 @@ const getDependentPackages = async (packageName: string, packageJSON: any) => {
 
 type Options = {
   name: string;
-  version: string;
+  packageVersion: string;
   repo: string;
   path: string;
   depth: number;
@@ -253,12 +256,16 @@ export async function workflow({ git }: Api, options: Options) {
       .map<any, any>(async ({ getContents }) => {
         const content = await getContents();
 
+        console.info("Building dependency tree...");
+        const dependencyTree = await getDependencyTree(content);
+
+        console.info("Getting dependent packages...");
         const dependentPackages = await getDependentPackages(
+          dependencyTree,
           options.name,
-          content,
         );
 
-        console.log(
+        console.info(
           `Dependent packages: ${JSON.stringify(
             [...dependentPackages.values()].map(({ package: pkg }) => pkg),
             null,
@@ -266,16 +273,21 @@ export async function workflow({ git }: Api, options: Options) {
           )}`,
         );
 
+        console.info(`Getting incompatible packages...`);
+
         const incompatiblePackages = [...dependentPackages.values()]
-          .filter((pkg) => !semver.satisfies(options.version, pkg.package.name))
+          .filter(
+            (pkg) =>
+              !semver.satisfies(options.packageVersion, pkg.package.name),
+          )
           .map((pkg) => [pkg.package.name, pkg.package.version]);
 
-        console.log(`Incompatible packages`, incompatiblePackages);
+        console.info(`Incompatible packages:`, incompatiblePackages);
 
         const report: Report = {
           target: {
             name: options.name,
-            version: options.version,
+            version: options.packageVersion,
           },
           packages: {},
         };
@@ -301,7 +313,7 @@ export async function workflow({ git }: Api, options: Options) {
 
           const minVersion = checkCompatibility(
             packageVersions,
-            options.version,
+            options.packageVersion,
             version ?? "",
           );
 
@@ -316,10 +328,10 @@ export async function workflow({ git }: Api, options: Options) {
   });
 }
 
-workflow(api, {
-  name: "react",
-  version: "18.0.0",
-  repo: "git@github.com:codemod-com/codemod",
-  path: "apps/frontend",
-  depth: 2,
-});
+// workflow(api, {
+//   name: "react",
+//   version: "18.0.0",
+//   repo: "git@github.com:codemod-com/codemod",
+//   path: "apps/frontend",
+//   depth: 2,
+// });

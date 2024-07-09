@@ -1,0 +1,38 @@
+{
+  "$schema": "https://codemod-utils.s3.us-west-1.amazonaws.com/configuration_schema.json",
+  "name": "migration-readiness-analyzer",
+  "version": "1.0.0",
+  "engine": "workflow",
+  "private": false,
+  "arguments": [
+    {
+      "kind": "string",
+      "name": "name",
+      "required": true
+    },
+    {
+      "kind": "string",
+      "name": "version",
+      "required": true
+    },
+    {
+      "kind": "string",
+      "name": "repo",
+      "required": true
+    },
+    {
+      "kind": "string",
+      "name": "path",
+      "required": true
+    },
+    {
+      "kind": "number",
+      "name": "depth",
+      "required": false
+    }
+  ],
+  "meta": {
+    "tags": [""],
+    "git": ""
+  }
+}
