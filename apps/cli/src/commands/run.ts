@@ -315,7 +315,7 @@ export const handleRunCliCommand = async (options: {
 
           printer.printConsoleMessage(
             "log",
-            colorLongString(readmeContents, chalk.cyan, 80),
+            colorLongString(readmeContents, chalk.cyan),
           );
         } catch (err) {
           printer.printConsoleMessage(

@@ -1,5 +1,4 @@
 import type { Api } from "@codemod.com/workflow";
-import fetch from "npm-registry-fetch";
 import semver from "semver";
 
 const parsePackageKey = (
@@ -21,7 +20,15 @@ const parsePackageKey = (
 
 const getPackageVersions = async (packageName: string) => {
   try {
-    return await fetch.json(packageName);
+    const data = await fetch(`https://registry.npmjs.org/${packageName}`, {
+      headers: { Accept: "application/json" },
+    });
+
+    if (data.status !== 200) {
+      return null;
+    }
+
+    return await data.json();
   } catch (error) {
     console.error(`Failed to fetch data for package ${packageName}:`, error);
     return null;
@@ -31,7 +38,7 @@ const getPackageVersions = async (packageName: string) => {
 const packageVersionsCache = new Map();
 
 const getPackageData = async (packageKey: string) => {
-  console.info(`Getting ${packageKey} data...`);
+  console.info(`Getting data for ${packageKey}...`);
 
   const { version, name } = parsePackageKey(packageKey);
 
@@ -88,9 +95,9 @@ const buildPackageKey = (name: string, version: string) => `${name}@${version}`;
 type Package = {
   name: string;
   version: string;
-  dependencies: Record<string, string>;
-  devDependencies: Record<string, string>;
-  peerDependencies: Record<string, string>;
+  // dependencies: Record<string, string>;
+  // devDependencies: Record<string, string>;
+  // peerDependencies: Record<string, string>;
 };
 
 type RawPackage = Package;
@@ -116,9 +123,6 @@ const buildNode = (node: Package): Node => {
     package: {
       name,
       version,
-      dependencies,
-      devDependencies,
-      peerDependencies,
     },
     parent: null,
     children: null,
@@ -258,7 +262,6 @@ export async function workflow({ git }: Api, options: Options) {
 
         console.info("Building dependency tree...");
         const dependencyTree = await getDependencyTree(content);
-
         console.info("Getting dependent packages...");
         const dependentPackages = await getDependentPackages(
           dependencyTree,
@@ -327,11 +330,3 @@ export async function workflow({ git }: Api, options: Options) {
       });
   });
 }
-
-// workflow(api, {
-//   name: "react",
-//   version: "18.0.0",
-//   repo: "git@github.com:codemod-com/codemod",
-//   path: "apps/frontend",
-//   depth: 2,
-// });

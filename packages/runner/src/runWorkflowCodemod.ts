@@ -32,7 +32,7 @@ const transform = async (
 
 		const { api } = require('@codemod.com/workflow');
 
-		promise = workflow(api);
+		promise = workflow(api, __CODEMODCOM__argumentRecord);
 	`;
 
   const exports = Object.freeze({});
@@ -54,6 +54,7 @@ const transform = async (
       }
     },
     promise: undefined,
+    fetch,
   });
   vm.runInContext(codeToExecute, context, { timeout: 30000 });
   if (context.promise) {

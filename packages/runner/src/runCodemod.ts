@@ -554,6 +554,7 @@ export const runCodemod = async (
     const transpiledSource = codemod.indexPath.endsWith(".ts")
       ? transpile(codemodSource.toString())
       : codemodSource.toString();
+
     await runWorkflowCodemod(transpiledSource, safeArgumentRecord, console.log);
 
     // @TODO pass modified paths?
