@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path, { join } from "node:path";
 import { type Api, api } from "@codemod.com/workflow";
 import fetch from "npm-registry-fetch";
 import semver from "semver";
@@ -85,27 +83,6 @@ const checkCompatibility = (
 
 const buildPackageKey = (name: string, version: string) => `${name}@${version}`;
 
-const getDependenciesFromPackageJson = (filePath: string) => {
-  const packageJsonPath = path.resolve(filePath);
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
-  if (!packageJson.dependencies) {
-    throw new Error("No dependencies found in package.json");
-  }
-
-  const { dependencies, peerDependencies, devDependencies } = packageJson;
-
-  const depsRecordToArr = (deps: Record<string, string>) =>
-    Object.entries(deps ?? {}).map(([name, version]) =>
-      buildPackageKey(name, version),
-    );
-
-  return {
-    dependencies: depsRecordToArr(dependencies),
-    peerDependencies: depsRecordToArr(peerDependencies),
-    devDependencies: depsRecordToArr(devDependencies),
-  };
-};
-
 type Package = {
   name: string;
   version: string;
@@ -168,7 +145,8 @@ const buildNodesTree = async (
     await Promise.allSettled<RawPackage>(dependenciesList.map(getPackageData))
   )
     .filter(assertFulfilled)
-    .map(({ value }) => value);
+    .map(({ value }) => value)
+    .filter(Boolean);
 
   if (depth > maxDepth) {
     return null;
@@ -206,6 +184,9 @@ const getDependencyTree = async (
 
   for (const packageKey of packageKeys) {
     const packageData = await getPackageData(packageKey);
+    if (!packageData) {
+      continue;
+    }
     const treeNode = await buildNodesTree(packageData, 0, maxDepths);
     nodes.set(treeNode?.package.name, treeNode);
   }
@@ -240,6 +221,7 @@ type Options = {
   name: string;
   version: string;
   repo: string;
+  path: string;
   depth: number;
 };
 
@@ -265,7 +247,8 @@ const consoleReporter = (report: Report) => {
 
 export async function workflow({ git }: Api, options: Options) {
   await git.clone(options.repo, async ({ files }) => {
-    const deps = await files("package.json")
+    // for now we cannot use external dependencies
+    await files(`${options.path}/package.json`)
       .json()
       .map<any, any>(async ({ getContents }) => {
         const content = await getContents();
@@ -275,9 +258,19 @@ export async function workflow({ git }: Api, options: Options) {
           content,
         );
 
+        console.log(
+          `Dependent packages: ${JSON.stringify(
+            [...dependentPackages.values()].map(({ package: pkg }) => pkg),
+            null,
+            2,
+          )}`,
+        );
+
         const incompatiblePackages = [...dependentPackages.values()]
           .filter((pkg) => !semver.satisfies(options.version, pkg.package.name))
           .map((pkg) => [pkg.package.name, pkg.package.version]);
+
+        console.log(`Incompatible packages`, incompatiblePackages);
 
         const report: Report = {
           target: {
@@ -321,13 +314,12 @@ export async function workflow({ git }: Api, options: Options) {
         consoleReporter(report);
       });
   });
-
-  // // @TODO hardcoded
 }
 
 workflow(api, {
   name: "react",
   version: "18.0.0",
-  repo: "git@github.com:DmytroHryshyn/feature-flag-example",
+  repo: "git@github.com:codemod-com/codemod",
+  path: "apps/frontend",
   depth: 2,
 });
